@@ -12,20 +12,22 @@ const PORT = 3000;
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: 'secret-key', // In production, use a secure env variable
+    secret: 'secret-key',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: { 
+        secure: false, // Set to true if using HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // Session lasts 24 hours
+    } 
 }));
 
-// --- Database Setup (SQLite) ---
+// --- Database Setup ---
 const db = new sqlite3.Database('./college.db', (err) => {
     if (err) console.error(err.message);
     console.log('Connected to the SQLite database.');
 });
 
-// Initialize Tables
 db.serialize(() => {
-    // Users Table
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
@@ -33,14 +35,12 @@ db.serialize(() => {
         role TEXT CHECK(role IN ('admin', 'faculty'))
     )`);
 
-    // Academic Structure Table (Programs, Depts, etc.)
     db.run(`CREATE TABLE IF NOT EXISTS academic_structure (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT, 
         name TEXT
     )`);
 
-    // Content Table (Problems, Contests)
     db.run(`CREATE TABLE IF NOT EXISTS content (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         faculty_id INTEGER,
@@ -48,21 +48,35 @@ db.serialize(() => {
         title TEXT,
         description TEXT,
         status TEXT DEFAULT 'pending',
-        FOREIGN KEY(faculty_id) REFERENCES users(id)
+        FOREIGN KEY(faculty_id) REFERENCES users(id) ON DELETE CASCADE
     )`);
 
-    // Create a default Admin user (admin/admin123)
     const adminHash = bcrypt.hashSync('admin123', 10);
     db.run(`INSERT OR IGNORE INTO users (username, password, role) VALUES ('admin', ?, 'admin')`, [adminHash]);
 });
 
 // --- Routes ---
 
-// 1. Authentication
+// 1. Session Persistence (NEW)
+app.get('/api/session', (req, res) => {
+    if (req.session.userId) {
+        // Return current user info if session exists
+        res.json({ 
+            loggedIn: true, 
+            role: req.session.role, 
+            userId: req.session.userId 
+        });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
+// 2. Authentication
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
+    if(!username || !password) return res.status(400).json({ error: 'Missing fields'});
     const hashedPassword = await bcrypt.hash(password, 10);
-    // New users are strictly 'faculty' by default in this demo
+    
     db.run(`INSERT INTO users (username, password, role) VALUES (?, ?, 'faculty')`, [username, hashedPassword], function(err) {
         if (err) return res.status(400).json({ error: 'Username already exists' });
         res.json({ message: 'Faculty registered successfully' });
@@ -86,7 +100,7 @@ app.post('/api/logout', (req, res) => {
     res.json({ message: 'Logged out' });
 });
 
-// 2. Admin: Academic Structure
+// 3. Admin: Academic Structure (CRUD)
 app.post('/api/academic', (req, res) => {
     if (req.session.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
     const { type, name } = req.body;
@@ -102,7 +116,16 @@ app.get('/api/academic', (req, res) => {
     });
 });
 
-// 3. Faculty: Create Content (Problem/Contest)
+// DELETE Academic Structure (Fixing "Can't delete" issue)
+app.delete('/api/academic/:id', (req, res) => {
+    if (req.session.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
+    db.run(`DELETE FROM academic_structure WHERE id = ?`, [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Deleted successfully' });
+    });
+});
+
+// 4. Content Operations
 app.post('/api/content', (req, res) => {
     if (req.session.role !== 'faculty') return res.status(403).json({ error: 'Unauthorized' });
     const { type, title, description } = req.body;
@@ -113,7 +136,6 @@ app.post('/api/content', (req, res) => {
     });
 });
 
-// 4. Admin: View & Verify Content
 app.get('/api/content/pending', (req, res) => {
     if (req.session.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
     db.all(`SELECT c.*, u.username as faculty_name FROM content c JOIN users u ON c.faculty_id = u.id WHERE status = 'pending'`, [], (err, rows) => {
@@ -121,19 +143,48 @@ app.get('/api/content/pending', (req, res) => {
     });
 });
 
-app.post('/api/content/verify', (req, res) => {
-    if (req.session.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
-    const { id } = req.body;
-    db.run(`UPDATE content SET status = 'verified' WHERE id = ?`, [id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Content verified' });
+app.get('/api/content/my', (req, res) => {
+    if (req.session.role !== 'faculty') return res.status(403).json({ error: 'Unauthorized' });
+    db.all(`SELECT * FROM content WHERE faculty_id = ?`, [req.session.userId], (err, rows) => {
+        res.json(rows);
     });
 });
 
-// 5. Public: View Verified Content (optional check)
-app.get('/api/content/verified', (req, res) => {
-    db.all(`SELECT * FROM content WHERE status = 'verified'`, [], (err, rows) => {
-        res.json(rows);
+app.post('/api/content/verify', (req, res) => {
+    if (req.session.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
+    const { id, status } = req.body;
+    db.run(`UPDATE content SET status = ? WHERE id = ?`, [status || 'verified', id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Content status updated' });
+    });
+});
+
+app.put('/api/content/:id', (req, res) => {
+    if (req.session.role !== 'faculty') return res.status(403).json({ error: 'Unauthorized' });
+    const { title, description } = req.body;
+    db.run(`UPDATE content SET title = ?, description = ? WHERE id = ? AND faculty_id = ? AND status != 'verified'`, 
+        [title, description, req.params.id, req.session.userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Content updated' });
+    });
+});
+
+app.delete('/api/content/:id', (req, res) => {
+    const userId = req.session.userId;
+    const role = req.session.role;
+    let sql = `DELETE FROM content WHERE id = ?`;
+    let params = [req.params.id];
+
+    if (role === 'faculty') {
+        sql += ` AND faculty_id = ?`;
+        params.push(userId);
+    } else if (role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    db.run(sql, params, function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Deleted successfully' });
     });
 });
 
