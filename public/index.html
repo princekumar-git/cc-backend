@@ -3,211 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College System</title>
+    <title>CampusCode - Programs Mapping</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background 0.3s; }
+        .sketch-card { 
+            background: white; border: 1px solid #e2e8f0; border-radius: 24px;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .sketch-card:hover { transform: translateY(-5px); border-color: #1E3A8A; box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.1); }
+        .year-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.25rem; background: white; border-radius: 16px; margin-bottom: 0.75rem;
+            border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s;
+        }
+        .year-row:hover { background: #f8fafc; border-color: #1E3A8A; }
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-[#F8F9FB] min-h-screen">
 
-    <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center hidden" id="navbar">
-        <h1 class="text-xl font-bold">College Portal</h1>
-        <button onclick="logout()" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600">Logout</button>
-    </nav>
-
-    <div id="auth-section" class="flex justify-center items-center h-screen">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login</h2>
-            <div class="mb-4">
-                <label class="block text-gray-700">Username</label>
-                <input type="text" id="username" class="w-full border p-2 rounded mt-1">
+    <div id="auth-section" class="flex justify-center items-center h-screen bg-white">
+        <div class="w-full max-w-md p-8">
+            <div class="text-[#1E3A8A] font-bold text-3xl mb-8 flex justify-center items-center italic">
+                <span class="mr-2">&lt;/&gt;</span> CampusCode
             </div>
-            <div class="mb-6">
-                <label class="block text-gray-700">Password</label>
-                <input type="password" id="password" class="w-full border p-2 rounded mt-1">
-            </div>
-            <button onclick="login()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
-            <p class="mt-4 text-center text-sm">
-                Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>
-            </p>
-        </div>
-    </div>
-
-    <div id="admin-dashboard" class="hidden container mx-auto p-6">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Create Academic Structure</h3>
-                <select id="struct-type" class="w-full border p-2 mb-2 rounded">
-                    <option value="Program">Program</option>
-                    <option value="Department">Department</option>
-                    <option value="Section">Section</option>
-                    <option value="Subject">Subject</option>
-                </select>
-                <input type="text" id="struct-name" placeholder="Name (e.g., Computer Science)" class="w-full border p-2 mb-4 rounded">
-                <button onclick="createStructure()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Create</button>
-                <div id="struct-list" class="mt-4 text-sm text-gray-600"></div>
-            </div>
-
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Verify Pending Content</h3>
-                <div id="pending-list" class="space-y-3">
-                    </div>
+            <h2 id="auth-title" class="text-2xl font-bold mb-6 text-gray-800">Faculty Login</h2>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="Username" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="password" id="password" placeholder="Password" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                <button onclick="handleAuth()" id="auth-btn" class="w-full py-3 bg-[#1E3A8A] text-white font-bold rounded-xl hover:bg-blue-900 transition">Login</button>
+                <p class="text-center text-sm text-gray-500">
+                    <span id="auth-toggle-text">Need an account?</span> 
+                    <a href="javascript:void(0)" onclick="toggleAuth()" class="text-blue-600 font-semibold" id="auth-toggle-link">Register here</a>
+                </p>
             </div>
         </div>
     </div>
 
-    <div id="faculty-dashboard" class="hidden container mx-auto p-6">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Faculty Dashboard</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Create Problem / Contest</h3>
-                <select id="content-type" class="w-full border p-2 mb-2 rounded">
-                    <option value="problem">Problem</option>
-                    <option value="contest">Contest</option>
-                </select>
-                <input type="text" id="content-title" placeholder="Title" class="w-full border p-2 mb-2 rounded">
-                <textarea id="content-desc" placeholder="Description" class="w-full border p-2 mb-4 rounded"></textarea>
-                <button onclick="createContent()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Submit for Verification</button>
+    <div id="main-dashboard" class="hidden flex min-h-screen">
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full">
+            <div class="p-6 text-[#1E3A8A] font-bold text-2xl flex items-center italic">
+                <span class="mr-1">&lt;/&gt;</span> CampusCode
             </div>
+            <nav class="mt-4 px-4 flex-1">
+                <button onclick="showMain()" class="w-full flex items-center gap-3 px-4 py-3 bg-[#D9E5F7] text-[#1E3A8A] rounded-lg mb-2">
+                    <i class="fas fa-th-large"></i> <span class="font-medium">Dashboard</span>
+                </button>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </aside>
 
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">All Verified Content</h3>
-                <div id="verified-list" class="space-y-2">
+        <main class="flex-1 ml-64 flex flex-col">
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10">
+                <h1 id="page-context" class="font-semibold text-gray-700">Program Management</h1>
+                <div id="user-initials" class="w-10 h-10 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-bold">U</div>
+            </header>
+
+            <div class="p-8">
+                <section id="mainView">
+                    <div id="mappingForm" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-10 mb-10">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Program</label>
+                                <button onclick="addNew('Program')" class="w-full text-xs text-blue-500 mb-1">+ Add New</button>
+                                <select id="select-Program" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm"></select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Department</label>
+                                <button onclick="addNew('Department')" class="w-full text-xs text-blue-500 mb-1">+ Add New</button>
+                                <select id="select-Department" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm"></select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Year Limit</label>
+                                <div class="h-5"></div>
+                                <select id="yearLimit" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+                                    <option value="4">1-4 Years</option>
+                                    <option value="2">1-2 Years</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Session</label>
+                                <button onclick="addNew('Session')" class="w-full text-xs text-blue-500 mb-1">+ Add New</button>
+                                <select id="select-Session" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm"></select>
+                            </div>
+                        </div>
+                        <button onclick="createMapping()" class="w-full py-4 bg-[#1E3A8A] text-white font-bold rounded-xl uppercase text-sm hover:bg-blue-900 transition shadow-lg">Create Mapping</button>
                     </div>
+
+                    <div id="programGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        </div>
+                </section>
+
+                <section id="yearView" class="hidden animate-fade-in">
+                    <button onclick="showMain()" class="mb-6 text-gray-500 hover:text-blue-600 transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </button>
+                    <h2 id="yearViewTitle" class="text-3xl font-bold mb-8 text-slate-800">Program Years</h2>
+                    <div id="yearList" class="max-w-2xl"></div>
+                </section>
+
+                <section id="sectionView" class="hidden">
+                    <button onclick="showYears()" class="mb-6 text-gray-500 hover:text-blue-600 transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Back to Years
+                    </button>
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 id="sectHeader" class="text-3xl font-bold text-slate-800">Sections</h2>
+                        <button onclick="addSection()" class="px-6 py-2 bg-[#1E3A8A] text-white rounded-xl font-bold">+ Add Section</button>
+                    </div>
+                    <div id="sectionGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </section>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        let isRegistering = false;
+        let db = { programs: [], departments: [], sessions: [], mappings: [] };
+        let isRegisterMode = false;
+        let activeMappingIdx = null;
+        let activeYear = null;
 
-        function toggleAuthMode() {
-            isRegistering = !isRegistering;
-            document.querySelector('h2').innerText = isRegistering ? 'Faculty Registration' : 'Login';
-            document.querySelector('button').innerText = isRegistering ? 'Register' : 'Login';
-            document.querySelector('p').innerHTML = isRegistering 
-                ? 'Already have account? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Login here</a>' 
-                : 'Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>';
+        // --- AUTH LOGIC ---
+        function toggleAuth() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('auth-title').innerText = isRegisterMode ? 'Faculty Registration' : 'Faculty Login';
+            document.getElementById('auth-btn').innerText = isRegisterMode ? 'Register' : 'Login';
+            document.getElementById('auth-toggle-text').innerText = isRegisterMode ? 'Already have an account?' : 'Need an account?';
+            document.getElementById('auth-toggle-link').innerText = isRegisterMode ? 'Login here' : 'Register here';
         }
 
-        async function login() {
+        async function handleAuth() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const endpoint = isRegistering ? '/api/register' : '/api/login';
+            const endpoint = isRegisterMode ? '/api/register' : '/api/login';
 
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            
-            const data = await res.json();
-            
+
             if (res.ok) {
-                if(isRegistering) {
-                    alert('Registration Successful! Please login.');
-                    toggleAuthMode();
+                if (isRegisterMode) {
+                    alert('Registration successful!');
+                    toggleAuth();
                 } else {
-                    loadDashboard(data.role);
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('main-dashboard').classList.remove('hidden');
+                    document.getElementById('user-initials').innerText = username.substring(0, 1).toUpperCase();
+                    init();
                 }
             } else {
-                alert(data.error);
+                const data = await res.json();
+                alert(data.error || 'Auth failed');
             }
         }
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.reload();
+        // --- DATA SYNC ---
+        async function init() {
+            await loadAcademicData();
+            const saved = localStorage.getItem('campus_mappings');
+            if (saved) db.mappings = JSON.parse(saved);
+            renderGrid();
         }
 
-        function loadDashboard(role) {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('navbar').classList.remove('hidden');
-
-            if (role === 'admin') {
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                loadPendingContent();
-                loadStructure();
-            } else {
-                document.getElementById('faculty-dashboard').classList.remove('hidden');
-                loadVerifiedContent();
-            }
+        async function loadAcademicData() {
+            try {
+                const res = await fetch('/api/academic');
+                const data = await res.json();
+                const types = ['Program', 'Department', 'Session'];
+                types.forEach(type => {
+                    const select = document.getElementById(`select-${type}`);
+                    const options = data.filter(item => item.type === type);
+                    select.innerHTML = options.map(opt => `<option value="${opt.name}">${opt.name}</option>`).join('');
+                });
+            } catch (e) { console.error("Database Error", e); }
         }
 
-        // --- Admin Functions ---
-        async function createStructure() {
-            const type = document.getElementById('struct-type').value;
-            const name = document.getElementById('struct-name').value;
-            await fetch('/api/academic', {
+        async function addNew(type) {
+            const name = prompt(`Enter new ${type} name:`);
+            if (!name) return;
+            const res = await fetch('/api/academic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, name })
             });
-            alert('Created Successfully');
-            loadStructure();
+            if (res.ok) loadAcademicData();
+            else alert("Error: Admin rights required or duplicate entry.");
         }
 
-        async function loadStructure() {
-            const res = await fetch('/api/academic');
-            const data = await res.json();
-            const list = document.getElementById('struct-list');
-            list.innerHTML = data.map(i => `<p class="border-b py-1"><strong>${i.type}:</strong> ${i.name}</p>`).join('');
+        // --- MAPPING LOGIC ---
+        function createMapping() {
+            const m = {
+                program: document.getElementById('select-Program').value,
+                dept: document.getElementById('select-Department').value,
+                session: document.getElementById('select-Session').value,
+                years: parseInt(document.getElementById('yearLimit').value),
+                sectionData: {} 
+            };
+            db.mappings.push(m);
+            save();
+            renderGrid();
         }
 
-        async function loadPendingContent() {
-            const res = await fetch('/api/content/pending');
-            const data = await res.json();
-            const list = document.getElementById('pending-list');
-            list.innerHTML = data.length ? data.map(item => `
-                <div class="border p-3 rounded bg-yellow-50 flex justify-between items-center">
-                    <div>
-                        <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
-                        <h4 class="font-semibold">${item.title}</h4>
-                        <p class="text-sm text-gray-600">By: ${item.faculty_name}</p>
-                    </div>
-                    <button onclick="verifyContent(${item.id})" class="bg-blue-500 text-white text-sm px-3 py-1 rounded">Verify</button>
-                </div>
-            `).join('') : '<p class="text-gray-500">No pending items.</p>';
-        }
-
-        async function verifyContent(id) {
-            await fetch('/api/content/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            loadPendingContent();
-        }
-
-        // --- Faculty Functions ---
-        async function createContent() {
-            const type = document.getElementById('content-type').value;
-            const title = document.getElementById('content-title').value;
-            const description = document.getElementById('content-desc').value;
-            
-            await fetch('/api/content', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, title, description })
-            });
-            alert('Submitted! Waiting for Admin verification.');
-            document.getElementById('content-title').value = '';
-            document.getElementById('content-desc').value = '';
-        }
-
-        async function loadVerifiedContent() {
-            const res = await fetch('/api/content/verified');
-            const data = await res.json();
-            const list = document.getElementById('verified-list');
-            list.innerHTML = data.map(item => `
-                <div class="border p-3 rounded bg-green-50">
-                    <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
-                    <h4 class="font-semibold">${item.title}</h4>
-                    <p class="text-sm text-gray-700">${item.description}</p>
+        function renderGrid() {
+            const grid = document.getElementById('programGrid');
+            grid.innerHTML = db.mappings.map((m, idx) => `
+                <div onclick="openYearView(${idx})" class="sketch-card p-8 flex flex-col items-center text-center">
+                    <div class="h-14 w-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-graduation-cap text-2xl"></i></div>
+                    <div class="text-[10px] font-bold text-blue-500 uppercase mb-1">${m.session}</div>
+                    <h4 class="font-bold text-xl text-gray-800">${m.program}</h4>
+                    <p class="text-xs text-gray-400 mt-2">${m.dept} • ${m.years} YEARS</p>
                 </div>
             `).join('');
         }
+
+        // --- NAVIGATION ---
+        function openYearView(idx) {
+            activeMappingIdx = idx;
+            document.getElementById('mainView').classList.add('hidden');
+            document.getElementById('yearView').classList.remove('hidden');
+            document.getElementById('yearViewTitle').innerText = db.mappings[idx].program;
+            renderYearList();
+        }
+
+        function renderYearList() {
+            let html = '';
+            for(let i=1; i<=db.mappings[activeMappingIdx].years; i++) {
+                html += `<div onclick="openSections(${i})" class="year-row"><span>Year ${i}</span><i class="fas fa-chevron-right text-gray-300"></i></div>`;
+            }
+            document.getElementById('yearList').innerHTML = html;
+        }
+
+        function openSections(yr) {
+            activeYear = yr;
+            document.getElementById('yearView').classList.add('hidden');
+            document.getElementById('sectionView').classList.remove('hidden');
+            document.getElementById('sectHeader').innerText = `Year ${yr} Sections`;
+            renderSections();
+        }
+
+        function renderSections() {
+            const m = db.mappings[activeMappingIdx];
+            if (!m.sectionData[activeYear]) m.sectionData[activeYear] = [];
+            
+            document.getElementById('sectionGrid').innerHTML = m.sectionData[activeYear].map((sect, sIdx) => `
+                <div class="bg-white p-6 rounded-3xl border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold">Section ${sect.name}</h4>
+                        <button onclick="removeSection(${sIdx})" class="text-red-400 text-sm"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${sect.subjects.map(s => `<span class="px-3 py-1 bg-gray-100 rounded-lg text-[10px] font-bold uppercase">${s}</span>`).join('')}
+                    </div>
+                    <button onclick="addSubject(${sIdx})" class="w-full py-2 bg-gray-50 border-2 border-dashed border-blue-200 rounded-xl text-blue-500 text-xs font-bold uppercase">+ Add Subjects</button>
+                </div>
+            `).join('');
+        }
+
+        function addSection() {
+            const m = db.mappings[activeMappingIdx];
+            const name = prompt("Section Name (e.g., A, B, Morning):");
+            if (name) {
+                m.sectionData[activeYear].push({ name, subjects: [] });
+                save(); renderSections();
+            }
+        }
+
+        function addSubject(sIdx) {
+            const subs = prompt("Enter subjects separated by commas:");
+            if (subs) {
+                const list = subs.split(',').map(s => s.trim());
+                db.mappings[activeMappingIdx].sectionData[activeYear][sIdx].subjects.push(...list);
+                save(); renderSections();
+            }
+        }
+
+        function showMain() {
+            document.getElementById('mainView').classList.remove('hidden');
+            document.getElementById('yearView').classList.add('hidden');
+            document.getElementById('sectionView').classList.add('hidden');
+        }
+
+        function showYears() {
+            document.getElementById('yearView').classList.remove('hidden');
+            document.getElementById('sectionView').classList.add('hidden');
+        }
+
+        function save() { localStorage.setItem('campus_mappings', JSON.stringify(db.mappings)); }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
