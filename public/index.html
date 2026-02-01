@@ -3,154 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College System - Persistent</title>
+    <title>College System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-[#F8F9FB] min-h-screen">
 
     <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center hidden" id="navbar">
         <h1 class="text-xl font-bold">College Portal</h1>
-        <div class="flex items-center gap-4">
-            <span id="user-role-display" class="bg-blue-700 px-2 py-1 rounded text-sm uppercase font-bold"></span>
-            <button onclick="logout()" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600 transition shadow">Logout</button>
-        </div>
+        <button onclick="logout()" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600">Logout</button>
     </nav>
 
-    <div id="loader" class="flex justify-center items-center h-screen text-gray-500">
-        Loading...
-    </div>
-
-    <div id="auth-section" class="hidden flex justify-center items-center h-screen fade-in">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-96 border-t-4 border-blue-600">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-700" id="auth-title">Login</h2>
+    <div id="auth-section" class="flex justify-center items-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login</h2>
             <div class="mb-4">
-                <label class="block text-gray-700 font-medium">Username</label>
-                <input type="text" id="username" class="w-full border p-2 rounded mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <label class="block text-gray-700">Username</label>
+                <input type="text" id="username" class="w-full border p-2 rounded mt-1">
             </div>
             <div class="mb-6">
-                <label class="block text-gray-700 font-medium">Password</label>
-                <input type="password" id="password" class="w-full border p-2 rounded mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <label class="block text-gray-700">Password</label>
+                <input type="password" id="password" class="w-full border p-2 rounded mt-1">
             </div>
-            <button onclick="login()" id="auth-btn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-semibold">Login</button>
+            <button onclick="login()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
             <p class="mt-4 text-center text-sm">
-                Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline hover:text-blue-800">Register here</a>
+                Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>
             </p>
         </div>
     </div>
 
-    <div id="admin-dashboard" class="hidden container mx-auto p-6 fade-in">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Admin Dashboard</h2>
+    <div id="admin-dashboard" class="hidden container mx-auto p-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow-md border-l-4 border-green-500">
-                <h3 class="text-xl font-bold mb-4 text-gray-700">Manage Academic Structure</h3>
-                <div class="flex gap-2 mb-4">
-                    <select id="struct-type" class="border p-2 rounded flex-1 bg-gray-50">
-                        <option value="Program">Program</option>
-                        <option value="Department">Department</option>
-                        <option value="Section">Section</option>
-                        <option value="Subject">Subject</option>
-                    </select>
-                    <input type="text" id="struct-name" placeholder="Name" class="border p-2 rounded flex-1">
-                    <button onclick="createStructure()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-bold">+</button>
-                </div>
-                <div id="struct-list" class="mt-4 text-sm text-gray-600 max-h-64 overflow-y-auto border-t pt-2"></div>
+            <div class="bg-white p-6 rounded shadow">
+                <h3 class="text-xl font-bold mb-4">Create Academic Structure</h3>
+                <select id="struct-type" class="w-full border p-2 mb-2 rounded">
+                    <option value="Program">Program</option>
+                    <option value="Department">Department</option>
+                    <option value="Section">Section</option>
+                    <option value="Subject">Subject</option>
+                </select>
+                <input type="text" id="struct-name" placeholder="Name (e.g., Computer Science)" class="w-full border p-2 mb-4 rounded">
+                <button onclick="createStructure()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Create</button>
+                <div id="struct-list" class="mt-4 text-sm text-gray-600"></div>
             </div>
 
-            <div class="bg-white p-6 rounded shadow-md border-l-4 border-yellow-500">
-                <h3 class="text-xl font-bold mb-4 text-gray-700">Pending Verification</h3>
-                <div id="pending-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
+            <div class="bg-white p-6 rounded shadow">
+                <h3 class="text-xl font-bold mb-4">Verify Pending Content</h3>
+                <div id="pending-list" class="space-y-3">
+                    </div>
             </div>
         </div>
     </div>
 
-    <div id="faculty-dashboard" class="hidden container mx-auto p-6 fade-in">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Faculty Dashboard</h2>
+    <div id="faculty-dashboard" class="hidden container mx-auto p-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Faculty Dashboard</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow-md border-l-4 border-indigo-500">
-                <h3 class="text-xl font-bold mb-4 text-gray-700">Content Submission</h3>
-                <select id="content-type" class="w-full border p-2 mb-2 rounded bg-gray-50">
+            <div class="bg-white p-6 rounded shadow">
+                <h3 class="text-xl font-bold mb-4">Create Problem / Contest</h3>
+                <select id="content-type" class="w-full border p-2 mb-2 rounded">
                     <option value="problem">Problem</option>
                     <option value="contest">Contest</option>
                 </select>
                 <input type="text" id="content-title" placeholder="Title" class="w-full border p-2 mb-2 rounded">
-                <textarea id="content-desc" placeholder="Description" rows="4" class="w-full border p-2 mb-4 rounded"></textarea>
-                
-                <input type="hidden" id="edit-id" value="">
-                
-                <div class="flex gap-2">
-                    <button id="submit-content-btn" onclick="createOrUpdateContent()" class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-semibold">Submit</button>
-                    <button id="cancel-edit-btn" onclick="resetForm()" class="hidden bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Cancel</button>
-                </div>
+                <textarea id="content-desc" placeholder="Description" class="w-full border p-2 mb-4 rounded"></textarea>
+                <button onclick="createContent()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Submit for Verification</button>
             </div>
 
-            <div class="bg-white p-6 rounded shadow-md border-l-4 border-blue-400">
-                <h3 class="text-xl font-bold mb-4 text-gray-700">My Submissions</h3>
-                <div id="my-content-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+            <div class="bg-white p-6 rounded shadow">
+                <h3 class="text-xl font-bold mb-4">All Verified Content</h3>
+                <div id="verified-list" class="space-y-2">
+                    </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
         let isRegistering = false;
-        let currentUserRole = '';
 
-        // --- 1. PERSISTENCE CHECK (Fixes Refresh Logout) ---
-        window.onload = async () => {
-            try {
-                const res = await fetch('/api/session');
-                const data = await res.json();
-                
-                document.getElementById('loader').classList.add('hidden');
-                
-                if (data.loggedIn) {
-                    loadDashboard(data.role);
-                } else {
-                    document.getElementById('auth-section').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error("Session check failed", err);
-                document.getElementById('auth-section').classList.remove('hidden');
-            }
-        };
-
-        // --- AUTH ---
         function toggleAuthMode() {
             isRegistering = !isRegistering;
-            document.getElementById('auth-title').innerText = isRegistering ? 'Faculty Registration' : 'Login';
-            document.getElementById('auth-btn').innerText = isRegistering ? 'Register' : 'Login';
+            document.querySelector('h2').innerText = isRegistering ? 'Faculty Registration' : 'Login';
+            document.querySelector('button').innerText = isRegistering ? 'Register' : 'Login';
+            document.querySelector('p').innerHTML = isRegistering 
+                ? 'Already have account? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Login here</a>' 
+                : 'Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>';
         }
 
-        async function login() {
+        async function handleAuth() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const endpoint = isRegistering ? '/api/register' : '/api/login';
+            const endpoint = isRegisterMode ? '/api/register' : '/api/login';
 
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    if(isRegistering) {
-                        alert('Registration Successful! Please login.');
-                        toggleAuthMode();
-                    } else {
-                        loadDashboard(data.role);
-                    }
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                if(isRegistering) {
+                    alert('Registration Successful! Please login.');
+                    toggleAuthMode();
                 } else {
-                    alert(data.error);
+                    loadDashboard(data.role);
                 }
-            } catch(e) { console.error(e); }
+            } else {
+                alert(data.error);
+            }
         }
 
         async function logout() {
@@ -159,37 +122,29 @@
         }
 
         function loadDashboard(role) {
-            currentUserRole = role;
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('navbar').classList.remove('hidden');
-            document.getElementById('user-role-display').innerText = role;
 
             if (role === 'admin') {
                 document.getElementById('admin-dashboard').classList.remove('hidden');
-                refreshAdminData();
+                loadPendingContent();
+                loadStructure();
             } else {
                 document.getElementById('faculty-dashboard').classList.remove('hidden');
-                refreshFacultyData();
+                loadVerifiedContent();
             }
         }
 
-        // --- ADMIN ---
-        async function refreshAdminData() {
-            loadStructure();
-            loadPendingContent();
-        }
-
+        // --- Admin Functions ---
         async function createStructure() {
             const type = document.getElementById('struct-type').value;
             const name = document.getElementById('struct-name').value;
-            if(!name) return alert("Name required");
-
             await fetch('/api/academic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, name })
             });
-            document.getElementById('struct-name').value = '';
+            alert('Created Successfully');
             loadStructure();
         }
 
@@ -208,120 +163,59 @@
             const res = await fetch('/api/academic');
             const data = await res.json();
             const list = document.getElementById('struct-list');
-            
-            if(data.length === 0) {
-                list.innerHTML = "<p class='text-gray-400 italic'>No structure defined yet.</p>";
-                return;
-            }
-
-            list.innerHTML = data.map(i => `
-                <div class="flex justify-between items-center border-b py-2 hover:bg-gray-50 px-2 transition">
-                    <div>
-                        <span class="text-xs font-bold text-gray-500 uppercase w-20 inline-block">${i.type}</span>
-                        <span class="text-gray-800 font-medium">${i.name}</span>
-                    </div>
-                    <button onclick="deleteStructure(${i.id})" class="text-red-400 hover:text-red-600 font-bold px-2" title="Delete">✕</button>
-                </div>
-            `).join('');
+            list.innerHTML = data.map(i => `<p class="border-b py-1"><strong>${i.type}:</strong> ${i.name}</p>`).join('');
         }
 
         async function loadPendingContent() {
             const res = await fetch('/api/content/pending');
             const data = await res.json();
             const list = document.getElementById('pending-list');
-            
-            if(data.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 italic">No pending items.</p>';
-                return;
-            }
-
-            list.innerHTML = data.map(item => `
-                <div class="border p-3 rounded bg-yellow-50 shadow-sm transition hover:shadow-md">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-bold uppercase text-gray-500 tracking-wide">${item.type}</span>
-                            <h4 class="font-bold text-gray-800">${item.title}</h4>
-                            <p class="text-sm text-gray-600 mt-1">${item.description}</p>
-                            <p class="text-xs text-blue-500 mt-2">By: ${item.faculty_name}</p>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <button onclick="verifyContent(${item.id}, 'verified')" class="bg-green-500 text-white text-xs px-3 py-1 rounded hover:bg-green-600">Approve</button>
-                            <button onclick="deleteContent(${item.id})" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600">Reject</button>
-                        </div>
+            list.innerHTML = data.length ? data.map(item => `
+                <div class="border p-3 rounded bg-yellow-50 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
+                        <h4 class="font-semibold">${item.title}</h4>
+                        <p class="text-sm text-gray-600">By: ${item.faculty_name}</p>
                     </div>
+                    <button onclick="verifyContent(${item.id})" class="bg-blue-500 text-white text-sm px-3 py-1 rounded">Verify</button>
                 </div>
-            `).join('');
+            `).join('') : '<p class="text-gray-500">No pending items.</p>';
         }
 
-        async function verifyContent(id, status) {
+        async function verifyContent(id) {
             await fetch('/api/content/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, status })
+                body: JSON.stringify({ id })
             });
             loadPendingContent();
         }
 
-        // --- FACULTY ---
-        async function refreshFacultyData() {
-            loadMyContent();
-        }
-
-        async function createOrUpdateContent() {
-            const id = document.getElementById('edit-id').value;
+        // --- Faculty Functions ---
+        async function createContent() {
             const type = document.getElementById('content-type').value;
             const title = document.getElementById('content-title').value;
             const description = document.getElementById('content-desc').value;
-
-            if(!title || !description) return alert("All fields required");
-
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/api/content/${id}` : '/api/content';
-
-            const res = await fetch(url, {
-                method: method,
+            
+            await fetch('/api/content', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, title, description })
             });
-
-            if(res.ok) {
-                alert(id ? 'Updated successfully' : 'Submitted successfully');
-                resetForm();
-                loadMyContent();
-            } else {
-                const err = await res.json();
-                alert(err.error);
-            }
+            alert('Submitted! Waiting for Admin verification.');
+            document.getElementById('content-title').value = '';
+            document.getElementById('content-desc').value = '';
         }
 
-        async function loadMyContent() {
-            const res = await fetch('/api/content/my');
+        async function loadVerifiedContent() {
+            const res = await fetch('/api/content/verified');
             const data = await res.json();
-            const list = document.getElementById('my-content-list');
-
-            if(data.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 italic">No submissions yet.</p>';
-                return;
-            }
-
-            list.innerHTML = data.map(item => {
-                const statusColor = item.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
-                const isEditable = item.status !== 'verified';
-                
-                return `
-                <div class="border p-3 rounded bg-white shadow-sm flex justify-between items-center hover:bg-gray-50 transition">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-bold uppercase text-gray-400">${item.type}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full ${statusColor} font-semibold">${item.status}</span>
-                        </div>
-                        <h4 class="font-semibold text-gray-800">${item.title}</h4>
-                        <p class="text-xs text-gray-500 truncate w-48">${item.description}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        ${isEditable ? `<button onclick="editContentMode('${item.id}', '${item.type}', '${item.title.replace(/'/g, "\\'")}', '${item.description.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-700 text-sm font-medium">Edit</button>` : ''}
-                        <button onclick="deleteContent(${item.id})" class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
-                    </div>
+            const list = document.getElementById('verified-list');
+            list.innerHTML = data.map(item => `
+                <div class="border p-3 rounded bg-green-50">
+                    <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
+                    <h4 class="font-semibold">${item.title}</h4>
+                    <p class="text-sm text-gray-700">${item.description}</p>
                 </div>
             `}).join('');
         }
@@ -357,6 +251,38 @@
             btn.classList.replace('hover:bg-orange-600', 'hover:bg-indigo-700');
             document.getElementById('cancel-edit-btn').classList.add('hidden');
         }
+
+        function addSection() {
+            const m = db.mappings[activeMappingIdx];
+            const name = prompt("Section Name (e.g., A, B, Morning):");
+            if (name) {
+                m.sectionData[activeYear].push({ name, subjects: [] });
+                save(); renderSections();
+            }
+        }
+
+        function addSubject(sIdx) {
+            const subs = prompt("Enter subjects separated by commas:");
+            if (subs) {
+                const list = subs.split(',').map(s => s.trim());
+                db.mappings[activeMappingIdx].sectionData[activeYear][sIdx].subjects.push(...list);
+                save(); renderSections();
+            }
+        }
+
+        function showMain() {
+            document.getElementById('mainView').classList.remove('hidden');
+            document.getElementById('yearView').classList.add('hidden');
+            document.getElementById('sectionView').classList.add('hidden');
+        }
+
+        function showYears() {
+            document.getElementById('yearView').classList.remove('hidden');
+            document.getElementById('sectionView').classList.add('hidden');
+        }
+
+        function save() { localStorage.setItem('campus_mappings', JSON.stringify(db.mappings)); }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
