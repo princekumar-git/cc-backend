@@ -207,18 +207,14 @@
             document.getElementById('content-desc').value = '';
         }
 
-        async function loadVerifiedContent() {
-            const res = await fetch('/api/content/verified');
-            const data = await res.json();
-            const list = document.getElementById('verified-list');
-            list.innerHTML = data.map(item => `
-                <div class="border p-3 rounded bg-green-50">
-                    <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
-                    <h4 class="font-semibold">${item.title}</h4>
-                    <p class="text-sm text-gray-700">${item.description}</p>
-                </div>
-            `}).join('');
-        }
+        list.innerHTML = data.map(item => `
+    <div class="border p-3 rounded bg-green-50">
+        <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
+        <h4 class="font-semibold">${item.title}</h4>
+        <p class="text-sm text-gray-700">${item.description}</p>
+    </div>
+`).join('');
+
 
         async function deleteContent(id) {
             if(!confirm("Permanently delete this item?")) return;
