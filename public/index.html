@@ -1,284 +1,620 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College System</title>
+    <title>CampusCode - Code Your Way To The Top</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#F8F9FB] min-h-screen">
-
-    <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center hidden" id="navbar">
-        <h1 class="text-xl font-bold">College Portal</h1>
-        <button onclick="logout()" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600">Logout</button>
-    </nav>
-
-    <div id="auth-section" class="flex justify-center items-center h-screen">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login</h2>
-            <div class="mb-4">
-                <label class="block text-gray-700">Username</label>
-                <input type="text" id="username" class="w-full border p-2 rounded mt-1">
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700">Password</label>
-                <input type="password" id="password" class="w-full border p-2 rounded mt-1">
-            </div>
-            <button onclick="login()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
-            <p class="mt-4 text-center text-sm">
-                Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>
-            </p>
-        </div>
-    </div>
-
-    <div id="admin-dashboard" class="hidden container mx-auto p-6">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Create Academic Structure</h3>
-                <select id="struct-type" class="w-full border p-2 mb-2 rounded">
-                    <option value="Program">Program</option>
-                    <option value="Department">Department</option>
-                    <option value="Section">Section</option>
-                    <option value="Subject">Subject</option>
-                </select>
-                <input type="text" id="struct-name" placeholder="Name (e.g., Computer Science)" class="w-full border p-2 mb-4 rounded">
-                <button onclick="createStructure()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Create</button>
-                <div id="struct-list" class="mt-4 text-sm text-gray-600"></div>
-            </div>
-
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Verify Pending Content</h3>
-                <div id="pending-list" class="space-y-3">
-                    </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="faculty-dashboard" class="hidden container mx-auto p-6">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Faculty Dashboard</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">Create Problem / Contest</h3>
-                <select id="content-type" class="w-full border p-2 mb-2 rounded">
-                    <option value="problem">Problem</option>
-                    <option value="contest">Contest</option>
-                </select>
-                <input type="text" id="content-title" placeholder="Title" class="w-full border p-2 mb-2 rounded">
-                <textarea id="content-desc" placeholder="Description" class="w-full border p-2 mb-4 rounded"></textarea>
-                <button onclick="createContent()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Submit for Verification</button>
-            </div>
-
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="text-xl font-bold mb-4">All Verified Content</h3>
-                <div id="verified-list" class="space-y-2">
-                    </div>
-            </div>
-        </main>
-    </div>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script>
-        let isRegistering = false;
-
-        function toggleAuthMode() {
-            isRegistering = !isRegistering;
-            document.querySelector('h2').innerText = isRegistering ? 'Faculty Registration' : 'Login';
-            document.querySelector('button').innerText = isRegistering ? 'Register' : 'Login';
-            document.querySelector('p').innerHTML = isRegistering 
-                ? 'Already have account? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Login here</a>' 
-                : 'Faculty? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 underline">Register here</a>';
-        }
-
-        async function handleAuth() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const endpoint = isRegisterMode ? '/api/register' : '/api/login';
-
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            
-            const data = await res.json();
-            
-            if (res.ok) {
-                if(isRegistering) {
-                    alert('Registration Successful! Please login.');
-                    toggleAuthMode();
-                } else {
-                    loadDashboard(data.role);
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: { DEFAULT: '#1E4A7A', 50: '#f0f9ff', 500: '#1E4A7A', 600: '#163a63' },
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'marquee': 'marquee 25s linear infinite',
+                        'marquee2': 'marquee2 25s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        },
+                        marquee2: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0%)' },
+                        }
+                    }
                 }
-            } else {
-                alert(data.error);
             }
         }
-
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.reload();
+    </script>
+    
+    <style>
+        /* Glassmorphism */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Typewriter Cursor */
+        .cursor-blink::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
 
-        function loadDashboard(role) {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('navbar').classList.remove('hidden');
-
-            if (role === 'admin') {
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                loadPendingContent();
-                loadStructure();
-            } else {
-                document.getElementById('faculty-dashboard').classList.remove('hidden');
-                loadVerifiedContent();
-            }
+        /* --- SLIDING LOGIN MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        // --- Admin Functions ---
-        async function createStructure() {
-            const type = document.getElementById('struct-type').value;
-            const name = document.getElementById('struct-name').value;
-            await fetch('/api/academic', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, name })
-            });
-            alert('Created Successfully');
-            loadStructure();
+        .auth-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            position: relative;
+            overflow: hidden;
+            width: 768px;
+            max-width: 95%;
+            min-height: 480px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
         }
 
-        // Fix: Can't Delete Program/Dept
-        async function deleteStructure(id) {
-            if(!confirm("Are you sure you want to delete this structure?")) return;
-            const res = await fetch(`/api/academic/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                loadStructure();
-            } else {
-                alert("Failed to delete.");
-            }
+        .modal-overlay.active .auth-container {
+            transform: scale(1);
         }
 
-        async function loadStructure() {
-            const res = await fetch('/api/academic');
-            const data = await res.json();
-            const list = document.getElementById('struct-list');
-            list.innerHTML = data.map(i => `<p class="border-b py-1"><strong>${i.type}:</strong> ${i.name}</p>`).join('');
+        .form-container {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: all 0.6s ease-in-out;
         }
 
-        async function loadPendingContent() {
-            const res = await fetch('/api/content/pending');
-            const data = await res.json();
-            const list = document.getElementById('pending-list');
-            list.innerHTML = data.length ? data.map(item => `
-                <div class="border p-3 rounded bg-yellow-50 flex justify-between items-center">
-                    <div>
-                        <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
-                        <h4 class="font-semibold">${item.title}</h4>
-                        <p class="text-sm text-gray-600">By: ${item.faculty_name}</p>
-                    </div>
-                    <button onclick="verifyContent(${item.id})" class="bg-blue-500 text-white text-sm px-3 py-1 rounded">Verify</button>
+        .sign-in-container {
+            left: 0;
+            width: 50%;
+            z-index: 2;
+        }
+
+        .auth-container.right-panel-active .sign-in-container {
+            transform: translateX(100%);
+        }
+
+        .sign-up-container {
+            left: 0;
+            width: 50%;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .auth-container.right-panel-active .sign-up-container {
+            transform: translateX(100%);
+            opacity: 1;
+            z-index: 5;
+            animation: show 0.6s;
+        }
+
+        @keyframes show {
+            0%, 49.99% { opacity: 0; z-index: 1; }
+            50%, 100% { opacity: 1; z-index: 5; }
+        }
+
+        .overlay-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 0.6s ease-in-out;
+            z-index: 100;
+        }
+
+        .auth-container.right-panel-active .overlay-container {
+            transform: translateX(-100%);
+        }
+
+        .overlay {
+            background: #1E4A7A;
+            background: linear-gradient(to right, #1E4A7A, #0D2440);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 0 0;
+            color: #FFFFFF;
+            position: relative;
+            left: -100%;
+            height: 100%;
+            width: 200%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .auth-container.right-panel-active .overlay {
+            transform: translateX(50%);
+        }
+
+        .overlay-panel {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 0 40px;
+            text-align: center;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .overlay-left { transform: translateX(-20%); }
+        .auth-container.right-panel-active .overlay-left { transform: translateX(0); }
+        .overlay-right { right: 0; transform: translateX(0); }
+        .auth-container.right-panel-active .overlay-right { transform: translateX(20%); }
+
+        .social-container a {
+            border: 1px solid #DDDDDD;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            height: 40px;
+            width: 40px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .social-container a:hover { background-color: #f3f4f6; }
+
+        /* Dark mode overrides */
+        .dark .auth-container { background-color: #1f2937; color: white; }
+        .dark .sign-in-container, .dark .sign-up-container { background-color: #1f2937; }
+        .dark .social-container a { border-color: #374151; color: #e5e7eb; }
+        .dark .social-container a:hover { background-color: #374151; }
+        .dark input { background-color: #374151; color: white; }
+        .dark h1 { color: white; }
+        .dark span, .dark a { color: #9ca3af; }
+    </style>
+</head>
+
+<body class="font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+    
+    <nav class="fixed top-0 w-full z-50 glassmorphism">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.reload()">
+                    <i class="fas fa-code text-2xl text-primary"></i>
+                    <span class="text-xl font-bold">CampusCode</span>
                 </div>
-            `).join('') : '<p class="text-gray-500">No pending items.</p>';
-        }
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="hover:text-primary transition-colors">Features</a>
+                    <a href="#about" class="hover:text-primary transition-colors">About</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                    <button onclick="openLoginModal()" class="px-4 py-2 text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium">Log In</button>
+                    <button onclick="openLoginModal()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <section class="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden relative">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-200 dark:bg-blue-900/30 rounded-full blur-3xl opacity-50 -z-10"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-200 dark:bg-purple-900/30 rounded-full blur-3xl opacity-50 -z-10"></div>
 
-        async function verifyContent(id) {
-            await fetch('/api/content/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            loadPendingContent();
-        }
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:text-left">
+                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/50 text-primary dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-6">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span> New: Weekly Battles
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        Code Your Way To <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">The Top 1%</span>
+                    </h1>
+                    
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                        Access the integrated College Portal. Students, Faculty, HODs, and Admins collaborate in one unified space.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <button onclick="openLoginModal()" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1 shadow-lg shadow-primary/30 font-bold">
+                            Start Coding Now
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center relative">
+                    <div class="w-full max-w-lg bg-[#1e1e1e] rounded-xl shadow-2xl overflow-hidden transform rotate-2 hover:rotate-0 transition-transform duration-500 border border-gray-700">
+                        <div class="bg-[#2d2d2d] px-4 py-3 flex items-center gap-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="ml-2 text-xs text-gray-400 font-mono">campus_portal.js</span>
+                        </div>
+                        <div class="p-6 font-mono text-sm leading-relaxed text-gray-300">
+                            <div class="mb-2"><span class="text-purple-400">const</span> <span class="text-blue-400">campus</span> = {</div>
+                            <div class="pl-4 mb-1"><span class="text-red-400">name</span>: <span class="text-green-400">'CampusCode'</span>,</div>
+                            <div class="pl-4 mb-1"><span class="text-red-400">roles</span>: [</div>
+                            <div class="pl-8 mb-1"><span class="text-green-400">'Student'</span>, <span class="text-green-400">'Faculty'</span>,</div>
+                            <div class="pl-8 mb-1"><span class="text-green-400">'HOD'</span>, <span class="text-green-400">'Admin'</span></div>
+                            <div class="pl-4 mb-2">],</div>
+                            <div class="pl-4 mb-1"><span class="text-blue-400">init</span>: <span class="text-purple-400">function</span>() {</div>
+                            <div class="pl-8"><span class="text-yellow-400">return</span> <span class="text-green-400">"Success"</span>;</div>
+                            <div class="pl-4">}</div>
+                            <div>};</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // --- Faculty Functions ---
-        async function createContent() {
-            const type = document.getElementById('content-type').value;
-            const title = document.getElementById('content-title').value;
-            const description = document.getElementById('content-desc').value;
-            
-            await fetch('/api/content', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, title, description })
-            });
-            alert('Submitted! Waiting for Admin verification.');
-            document.getElementById('content-title').value = '';
-            document.getElementById('content-desc').value = '';
-        }
-
-        list.innerHTML = data.map(item => `
-    <div class="border p-3 rounded bg-green-50">
-        <span class="text-xs font-bold uppercase text-gray-500">${item.type}</span>
-        <h4 class="font-semibold">${item.title}</h4>
-        <p class="text-sm text-gray-700">${item.description}</p>
+    <div class="bg-gray-900 border-y border-gray-800 overflow-hidden py-3">
+        <div class="relative flex overflow-x-hidden group">
+            <div class="py-1 animate-marquee whitespace-nowrap flex items-center space-x-12 text-sm text-gray-400">
+                <span class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> User <span class="text-white font-mono mx-1">@alex_dev</span> solved "Binary Search"</span>
+                <span class="flex items-center"><i class="fas fa-trophy text-yellow-500 mr-2"></i> <span class="text-white font-mono mx-1">IIT_Mumbai</span> just won the Weekly Battle</span>
+                <span class="flex items-center"><i class="fas fa-fire text-red-500 mr-2"></i> <span class="text-white font-mono mx-1">@sarah_codes</span> is on a 30-day streak!</span>
+            </div>
+            <div class="absolute top-0 py-1 animate-marquee2 whitespace-nowrap flex items-center space-x-12 text-sm text-gray-400">
+                <span class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> User <span class="text-white font-mono mx-1">@alex_dev</span> solved "Binary Search"</span>
+                <span class="flex items-center"><i class="fas fa-trophy text-yellow-500 mr-2"></i> <span class="text-white font-mono mx-1">IIT_Mumbai</span> just won the Weekly Battle</span>
+                <span class="flex items-center"><i class="fas fa-fire text-red-500 mr-2"></i> <span class="text-white font-mono mx-1">@sarah_codes</span> is on a 30-day streak!</span>
+            </div>
+        </div>
     </div>
-`).join('');
 
-
-        async function deleteContent(id) {
-            if(!confirm("Permanently delete this item?")) return;
-            await fetch(`/api/content/${id}`, { method: 'DELETE' });
-            if(currentUserRole === 'admin') loadPendingContent();
-            else refreshFacultyData();
-        }
-
-        function editContentMode(id, type, title, desc) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('content-type').value = type;
-            document.getElementById('content-title').value = title;
-            document.getElementById('content-desc').value = desc;
+    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-3">Ecosystem</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Roles & Access</h3>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Tailored experiences for every member of the academic community.</p>
+            </div>
             
-            const btn = document.getElementById('submit-content-btn');
-            btn.innerText = "Update";
-            btn.classList.replace('bg-indigo-600', 'bg-orange-500');
-            btn.classList.replace('hover:bg-indigo-700', 'hover:bg-orange-600');
-            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="p-8 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 group">
+                    <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-user-graduate text-2xl text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Students</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Empowering the next generation with comprehensive tools.</p>
+                    <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Submit coding problems</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Access college contests</li>
+                    </ul>
+                </div>
+                
+                <div class="p-8 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 group">
+                    <div class="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-chalkboard-teacher text-2xl text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Faculty</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Tools for course management and assessment.</p>
+                    <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Create content & assessments</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Track progress analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-gray-900 text-white overflow-hidden relative">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Built for Developers, by Developers</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Experience a world-class coding environment right in your browser.</p>
+            </div>
+
+            <div class="rounded-xl overflow-hidden shadow-2xl border border-gray-700 bg-[#1e1e1e] transform hover:scale-[1.01] transition-transform duration-500">
+                
+                <div class="bg-[#2d2d2d] px-4 py-3 flex items-center justify-between border-b border-gray-700">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono flex items-center gap-2">
+                        <i class="fas fa-lock"></i> campuscode_editor.tsx
+                    </div>
+                    <div class="w-16"></div> 
+                </div>
+
+                <div class="flex flex-col md:flex-row h-[450px]">
+                    <div class="hidden md:block w-64 bg-[#252526] border-r border-gray-700 p-4">
+                        <div class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">Explorer</div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 text-gray-300 bg-[#37373d] px-2 py-1 rounded cursor-pointer">
+                                <i class="fab fa-js text-yellow-400"></i> solution.js
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 bg-[#1e1e1e] p-6 font-mono text-sm overflow-y-auto relative group">
+                        <div class="pl-4 text-gray-300 leading-6">
+                            <span class="text-purple-400">class</span> <span class="text-yellow-300">Solution</span> {<br>
+                            &nbsp;&nbsp;<span class="text-gray-500">// Problem: Two Sum</span><br>
+                            &nbsp;&nbsp;<span class="text-purple-400">public int</span>[] <span class="text-blue-400">twoSum</span>(<span class="text-purple-400">int</span>[] nums, <span class="text-purple-400">int</span> target) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;Map&lt;<span class="text-purple-400">Integer</span>, <span class="text-purple-400">Integer</span>&gt; map = <span class="text-purple-400">new</span> HashMap&lt;&gt;();<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// ... logic ...</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return new int</span>[] {};<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+
+                        <button id="runCodeBtn" class="absolute bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all active:scale-95 z-20">
+                            <i class="fas fa-play text-xs"></i> Run Code
+                        </button>
+                    </div>
+
+                    <div id="terminalOutput" class="w-full md:w-1/3 bg-[#1e1e1e] border-l border-gray-700 p-4 font-mono text-xs hidden md:block">
+                        <div class="text-gray-400 uppercase tracking-wider mb-2 border-b border-gray-700 pb-2">Console Output</div>
+                        <div id="consoleText" class="space-y-2 opacity-0 transition-opacity duration-300">
+                            <div class="text-yellow-400">> Compiling Solution.java...</div>
+                            <div class="text-gray-300">> Running tests...</div>
+                            <div class="text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i> Test Case 1: Passed</div>
+                            <div class="mt-4 p-2 bg-green-500/10 border border-green-500/30 rounded text-green-300 font-bold text-center">All Tests Passed! 🚀</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white pt-16 pb-8 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-gray-500 text-sm">© 2025 CampusCode. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <div id="loginModalOverlay" class="modal-overlay">
+        <div class="auth-container" id="authContainer">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 z-50 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="form-container sign-up-container">
+                <form onsubmit="handleRegister(event)" class="bg-white dark:bg-gray-800 flex flex-col items-center justify-center h-full px-12 text-center">
+                    <h1 class="font-bold text-2xl mb-4 dark:text-white">Faculty Registration</h1>
+                    <div class="social-container mb-4">
+                        <a href="#" class="mx-1"><i class="fab fa-google"></i></a>
+                        <a href="#" class="mx-1"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <span class="text-xs mb-4 dark:text-gray-400">or use your email</span>
+                    <input type="email" id="signup-email" placeholder="Email" class="bg-gray-100 dark:bg-gray-700 border-none px-4 py-3 mb-2 w-full rounded text-sm focus:outline-none" />
+                    <input type="password" id="signup-password" placeholder="Password" class="bg-gray-100 dark:bg-gray-700 border-none px-4 py-3 mb-4 w-full rounded text-sm focus:outline-none" />
+                    <button type="submit" class="rounded-full bg-primary text-white font-bold text-xs uppercase px-12 py-3 tracking-wider transition-transform hover:scale-105">Sign Up</button>
+                </form>
+            </div>
+
+            <div class="form-container sign-in-container">
+                <form onsubmit="handleLogin(event)" class="bg-white dark:bg-gray-800 flex flex-col items-center justify-center h-full px-12 text-center">
+                    <h1 class="font-bold text-2xl mb-4 dark:text-white">Sign in</h1>
+                    <div class="social-container mb-4">
+                        <a href="#" class="mx-1"><i class="fab fa-google"></i></a>
+                        <a href="#" class="mx-1"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <span class="text-xs mb-4 dark:text-gray-400">or use your account</span>
+                    <input type="text" id="login-username" placeholder="Username / Email" class="bg-gray-100 dark:bg-gray-700 border-none px-4 py-3 mb-2 w-full rounded text-sm focus:outline-none" />
+                    <input type="password" id="login-password" placeholder="Password" class="bg-gray-100 dark:bg-gray-700 border-none px-4 py-3 mb-4 w-full rounded text-sm focus:outline-none" />
+                    <a href="#" class="text-xs text-gray-500 dark:text-gray-400 mb-6 border-b border-dashed border-gray-400 pb-1">Forgot your password?</a>
+                    <button type="submit" class="rounded-full bg-primary text-white font-bold text-xs uppercase px-12 py-3 tracking-wider transition-transform hover:scale-105 shadow-lg shadow-blue-900/30">Sign In</button>
+                </form>
+            </div>
+
+            <div class="overlay-container">
+                <div class="overlay">
+                    <div class="overlay-panel overlay-left">
+                        <h1 class="font-bold text-2xl mb-4">Welcome Back!</h1>
+                        <p class="text-sm font-light mb-8">Login with your personal info</p>
+                        <button class="ghost rounded-full border border-white bg-transparent text-white font-bold text-xs uppercase px-12 py-3 tracking-wider transition-transform hover:scale-105" id="signIn">Sign In</button>
+                    </div>
+                    <div class="overlay-panel overlay-right">
+                        <h1 class="font-bold text-2xl mb-4">Join Us!</h1>
+                        <p class="text-sm font-light mb-8">Register to manage content</p>
+                        <button class="ghost rounded-full border border-white bg-transparent text-white font-bold text-xs uppercase px-12 py-3 tracking-wider transition-transform hover:scale-105" id="signUp">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // --- UI INTERACTION LOGIC ---
+
+        // 1. Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
         }
 
-        function resetForm() {
-            document.getElementById('edit-id').value = '';
-            document.getElementById('content-title').value = '';
-            document.getElementById('content-desc').value = '';
-            
-            const btn = document.getElementById('submit-content-btn');
-            btn.innerText = "Submit";
-            btn.classList.replace('bg-orange-500', 'bg-indigo-600');
-            btn.classList.replace('hover:bg-orange-600', 'hover:bg-indigo-700');
-            document.getElementById('cancel-edit-btn').classList.add('hidden');
-        }
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
 
-        function addSection() {
-            const m = db.mappings[activeMappingIdx];
-            const name = prompt("Section Name (e.g., A, B, Morning):");
-            if (name) {
-                m.sectionData[activeYear].push({ name, subjects: [] });
-                save(); renderSections();
+        // 2. Typewriter Effect
+        const words = ["CODE", "COMPETE", "COLLABORATE"];
+        const el = document.getElementById('typewriter');
+        let wordIndex = 0, charIndex = 0, isDeleting = false;
+
+        function type() {
+            const current = words[wordIndex];
+            if (isDeleting) {
+                el.textContent = current.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                el.textContent = current.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            if (!isDeleting && charIndex === current.length) {
+                isDeleting = true;
+                setTimeout(type, 2000);
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+                setTimeout(type, 500);
+            } else {
+                setTimeout(type, isDeleting ? 50 : 150);
             }
         }
+        type();
 
-        function addSubject(sIdx) {
-            const subs = prompt("Enter subjects separated by commas:");
-            if (subs) {
-                const list = subs.split(',').map(s => s.trim());
-                db.mappings[activeMappingIdx].sectionData[activeYear][sIdx].subjects.push(...list);
-                save(); renderSections();
-            }
+        // 3. Sliding Modal Logic
+        const signUpBtn = document.getElementById('signUp');
+        const signInBtn = document.getElementById('signIn');
+        const authContainer = document.getElementById('authContainer');
+        const modalOverlay = document.getElementById('loginModalOverlay');
+
+        function openLoginModal() { modalOverlay.classList.add('active'); }
+        function closeLoginModal() { modalOverlay.classList.remove('active'); }
+
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeLoginModal(); });
+        signUpBtn.addEventListener('click', () => authContainer.classList.add("right-panel-active"));
+        signInBtn.addEventListener('click', () => authContainer.classList.remove("right-panel-active"));
+
+        // 4. Interactive IDE Demo Logic
+        const runBtn = document.getElementById('runCodeBtn');
+        const consoleText = document.getElementById('consoleText');
+        
+        if(runBtn) {
+            runBtn.addEventListener('click', function() {
+                consoleText.classList.remove('opacity-100');
+                consoleText.classList.add('opacity-0');
+                
+                const originalText = runBtn.innerHTML;
+                runBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Running...';
+                runBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                
+                setTimeout(() => {
+                    consoleText.classList.remove('opacity-0');
+                    consoleText.classList.add('opacity-100');
+                    runBtn.innerHTML = originalText;
+                    runBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                }, 800);
+            });
         }
 
-        function showMain() {
-            document.getElementById('mainView').classList.remove('hidden');
-            document.getElementById('yearView').classList.add('hidden');
-            document.getElementById('sectionView').classList.add('hidden');
+        // --- BACKEND API INTEGRATION ---
+
+        // 5. Session Check
+        window.onload = async () => {
+            try {
+                const res = await fetch('/api/session');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    window.location.href = data.redirect || (data.role === 'admin' ? '/admin.html' : '/faculty.html');
+                }
+            } catch (e) { console.error("Session check failed"); }
+        };
+
+        // 6. Handle Login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error || 'Login failed');
+                }
+            } catch (err) { alert('Connection Error'); }
         }
 
-        function showYears() {
-            document.getElementById('yearView').classList.remove('hidden');
-            document.getElementById('sectionView').classList.add('hidden');
-        }
+        // 7. Handle Registration
+        async function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const username = email; 
 
-        function save() { localStorage.setItem('campus_mappings', JSON.stringify(db.mappings)); }
-        function logout() { location.reload(); }
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Registration Successful! Please sign in.');
+                    authContainer.classList.remove("right-panel-active");
+                } else {
+                    alert(data.error || 'Registration failed');
+                }
+            } catch (err) { alert('Connection Error'); }
+        }
     </script>
 </body>
 </html>

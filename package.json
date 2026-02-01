@@ -1,7 +1,6 @@
 {
   "name": "ccbackend",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -13,5 +12,17 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/princekumar-git/cc-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/princekumar-git/cc-backend/issues"
+  },
+  "homepage": "https://github.com/princekumar-git/cc-backend#readme",
+  "description": ""
 }
